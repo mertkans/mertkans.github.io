@@ -313,11 +313,13 @@
 
         function getHighScores() {
             const scores = localStorage.getItem('multiplicationGameHighScores');
+            console.log("localStorage'dan okunan skorlar (ham veri):", scores); // Teşhis için log
             return scores ? JSON.parse(scores) : [];
         }
 
         function displayHighScores() {
             const scores = getHighScores();
+            console.log("Yüksek skorlar listeleniyor:", scores); // Teşhis için log
             highScoresList.innerHTML = ""; // Listeyi temizle
             if (scores.length === 0) {
                 highScoresList.innerHTML = "<li>Henüz kayıtlı skor yok.</li>";

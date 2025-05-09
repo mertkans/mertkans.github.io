@@ -1,1 +1,398 @@
-Helloo
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çarpım Tablosu Oyunu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        #questionArea {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #555;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        #answerInput {
+            font-size: 1.8em;
+            padding: 10px;
+            margin-bottom: 20px;
+            width: calc(100% - 24px); /* padding hesabı */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .keypad button {
+            font-size: 1.5em;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .keypad button:hover {
+            background-color: #0056b3;
+        }
+        .keypad button.control {
+            background-color: #28a745; /* Yeşil */
+        }
+        .keypad button.control:hover {
+            background-color: #1e7e34;
+        }
+        .keypad button.clear {
+            background-color: #ffc107; /* Sarı */
+            color: #333;
+        }
+        .keypad button.clear:hover {
+            background-color: #e0a800;
+        }
+        #scoreArea, #timerArea, #feedbackArea {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        #feedbackArea {
+            min-height: 1.5em; /* Geri bildirim için yer ayır */
+            font-weight: bold;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        #nameInputArea {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        #nameInputArea input {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        #nameInputArea button {
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #nameInputArea button:hover {
+            background-color: #1e7e34;
+        }
+        #highScoresArea {
+            margin-top: 20px;
+            text-align: left;
+        }
+        #highScoresArea h2 {
+            text-align: center;
+            color: #007bff;
+        }
+        #highScoresArea ol {
+            list-style-type: decimal;
+            padding-left: 20px;
+        }
+        #highScoresArea li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        #highScoresArea li:last-child {
+            border-bottom: none;
+        }
+        .play-again-button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .play-again-button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Çarpım Tablosu Oyunu</h1>
+        <div id="scoreArea">Puan: 0</div>
+        <div id="timerArea">Soru Süresi: 0s</div>
+        <div id="gameTimerArea">Kalan Oyun Süresi: 60s</div>
+        <div id="feedbackArea"></div>
+
+        <div id="gameplayArea">
+            <div id="questionArea">Soru Yükleniyor...</div>
+            <div id="answerInput" role="textbox" aria-label="Cevabınız"></div>
+            <div class="keypad">
+                <button onclick="appendNumber(1)">1</button>
+                <button onclick="appendNumber(2)">2</button>
+                <button onclick="appendNumber(3)">3</button>
+                <button onclick="appendNumber(4)">4</button>
+                <button onclick="appendNumber(5)">5</button>
+                <button onclick="appendNumber(6)">6</button>
+                <button onclick="appendNumber(7)">7</button>
+                <button onclick="appendNumber(8)">8</button>
+                <button onclick="appendNumber(9)">9</button>
+                <button class="clear" onclick="clearInput()">Sil</button>
+                <button onclick="appendNumber(0)">0</button>
+                <button class="control" onclick="checkAnswer()">Giriş</button>
+            </div>
+        </div>
+
+        <div id="nameInputArea" class="hidden">
+            <h2>Oyun Bitti!</h2>
+            <p>Toplam Puanınız: <span id="finalScore">0</span></p>
+            <label for="playerName">Adınız: </label>
+            <input type="text" id="playerName" maxlength="15">
+            <button onclick="handleScoreSave()">Skoru Kaydet</button>
+        </div>
+        
+        <button id="playAgainButton" class="play-again-button hidden" onclick="startGame()">Tekrar Oyna</button>
+
+        <div id="highScoresArea">
+            <h2>En Yüksek Skorlar</h2>
+            <ol id="highScoresList"></ol>
+        </div>
+    </div>
+
+    <script>
+        const questionArea = document.getElementById('questionArea');
+        const answerInputDisplay = document.getElementById('answerInput');
+        const scoreArea = document.getElementById('scoreArea');
+        const timerArea = document.getElementById('timerArea');
+        const gameTimerDisplay = document.getElementById('gameTimerArea');
+        const feedbackArea = document.getElementById('feedbackArea');
+        const keypadButtons = document.querySelectorAll('.keypad button');
+        const gameplayArea = document.getElementById('gameplayArea');
+        const nameInputArea = document.getElementById('nameInputArea');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const playerNameInput = document.getElementById('playerName');
+        const highScoresList = document.getElementById('highScoresList');
+        const playAgainButton = document.getElementById('playAgainButton');
+
+
+        let currentAnswerString = "";
+        let num1, num2, correctAnswer;
+        let score = 0;
+        let questionStartTime;
+        let questionTimerInterval;
+        const MAX_QUESTION_TIME_SECONDS = 20; // Soru başına maksimum süre (puanlama için)
+
+        const TOTAL_GAME_DURATION = 60; // Saniye cinsinden toplam oyun süresi
+        let gameTimeRemaining = TOTAL_GAME_DURATION;
+        let gameTimerInterval;
+        let gameEnded = false;
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateQuestion() {
+            if (gameEnded) return;
+
+            num1 = getRandomInt(2, 9);
+            num2 = getRandomInt(2, 9);
+            correctAnswer = num1 * num2;
+            questionArea.textContent = `${num1} × ${num2} = ?`;
+            currentAnswerString = "";
+            answerInputDisplay.textContent = ""; // Görsel girdiyi temizle
+            feedbackArea.textContent = "";
+            feedbackArea.className = "";
+            questionStartTime = new Date();
+            startQuestionTimer();
+        }
+
+        function startQuestionTimer() {
+            clearInterval(questionTimerInterval); // Önceki zamanlayıcıyı temizle
+            let secondsPassed = 0;
+            timerArea.textContent = `Soru Süresi: ${secondsPassed}s`;
+            questionTimerInterval = setInterval(() => {
+                secondsPassed++;
+                timerArea.textContent = `Soru Süresi: ${secondsPassed}s`;
+            }, 1000);
+        }
+
+        function stopQuestionTimer() {
+            clearInterval(questionTimerInterval);
+        }
+
+        function startGameTimer() {
+            gameTimeRemaining = TOTAL_GAME_DURATION;
+            gameTimerDisplay.textContent = `Kalan Oyun Süresi: ${gameTimeRemaining}s`;
+            gameTimerInterval = setInterval(() => {
+                gameTimeRemaining--;
+                gameTimerDisplay.textContent = `Kalan Oyun Süresi: ${gameTimeRemaining}s`;
+                if (gameTimeRemaining <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameEnded = true;
+            clearInterval(gameTimerInterval);
+            clearInterval(questionTimerInterval);
+            
+            gameplayArea.classList.add('hidden');
+            nameInputArea.classList.remove('hidden');
+            playAgainButton.classList.remove('hidden');
+            
+            finalScoreDisplay.textContent = score;
+            feedbackArea.textContent = ""; // Önceki geri bildirimleri temizle
+            
+            // Tuşları devre dışı bırak (zaten gameplayArea gizlendiği için gerekmeyebilir ama yine de iyi bir pratik)
+            keypadButtons.forEach(button => button.disabled = true);
+        }
+
+        function handleScoreSave() {
+            const playerName = playerNameInput.value.trim();
+            if (!playerName) {
+                alert("Lütfen adınızı girin.");
+                return;
+            }
+            saveHighScore(playerName, score);
+            displayHighScores();
+            nameInputArea.classList.add('hidden'); // Kayıttan sonra gizle
+            playerNameInput.value = ""; // Input'u temizle
+        }
+
+        function saveHighScore(name, currentScore) {
+            const highScores = getHighScores();
+            const newScoreEntry = {
+                name: name,
+                score: currentScore,
+                date: new Date().toLocaleString('tr-TR')
+            };
+            highScores.push(newScoreEntry);
+            highScores.sort((a, b) => b.score - a.score); // Puana göre büyükten küçüğe sırala
+            localStorage.setItem('multiplicationGameHighScores', JSON.stringify(highScores.slice(0, 10))); // En iyi 10
+        }
+
+        function getHighScores() {
+            const scores = localStorage.getItem('multiplicationGameHighScores');
+            return scores ? JSON.parse(scores) : [];
+        }
+
+        function displayHighScores() {
+            const scores = getHighScores();
+            highScoresList.innerHTML = ""; // Listeyi temizle
+            if (scores.length === 0) {
+                highScoresList.innerHTML = "<li>Henüz kayıtlı skor yok.</li>";
+                return;
+            }
+            scores.forEach(scoreItem => {
+                const li = document.createElement('li');
+                li.textContent = `${scoreItem.name} - ${scoreItem.score} Puan (${scoreItem.date})`;
+                highScoresList.appendChild(li);
+            });
+        }
+
+        function appendNumber(num) {
+            if (gameEnded || currentAnswerString.length >= 3) return;
+            currentAnswerString += num.toString();
+            answerInputDisplay.textContent = currentAnswerString;
+        }
+
+        function clearInput() {
+            if (gameEnded) return;
+            currentAnswerString = "";
+            answerInputDisplay.textContent = "";
+        }
+
+        function checkAnswer() {
+            if (gameEnded) return;
+
+            stopQuestionTimer();
+            const userAnswer = parseInt(currentAnswerString);
+            const timeTaken = (new Date() - questionStartTime) / 1000; // Saniye cinsinden
+
+            if (isNaN(userAnswer)) {
+                feedbackArea.textContent = "Lütfen bir sayı girin.";
+                feedbackArea.className = "incorrect";
+                 if (!gameEnded) setTimeout(generateQuestion, 2000);
+                return;
+            }
+
+            if (userAnswer === correctAnswer) {
+                let pointsEarned = Math.max(1, MAX_QUESTION_TIME_SECONDS - Math.floor(timeTaken)); // Zamana göre puan
+                score += pointsEarned;
+                feedbackArea.textContent = `Doğru! +${pointsEarned} puan. (${timeTaken.toFixed(1)}s)`;
+                feedbackArea.className = "correct";
+            } else {
+                feedbackArea.textContent = `Yanlış. Doğru cevap: ${correctAnswer}`;
+                feedbackArea.className = "incorrect";
+            }
+            scoreArea.textContent = `Puan: ${score}`;
+            if (!gameEnded) {
+                setTimeout(generateQuestion, 2000); // 2 saniye sonra yeni soru
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            gameEnded = false;
+            scoreArea.textContent = `Puan: ${score}`;
+            
+            gameplayArea.classList.remove('hidden');
+            nameInputArea.classList.add('hidden');
+            playAgainButton.classList.add('hidden');
+            feedbackArea.textContent = "";
+
+
+            keypadButtons.forEach(button => button.disabled = false);
+            startGameTimer();
+            generateQuestion();
+            displayHighScores(); // Her oyun başlangıcında skorları göster/güncelle
+        }
+
+        // Oyunu başlat ve başlangıçta yüksek skorları göster
+        window.onload = () => {
+            startGame(); // Oyunu doğrudan başlatmak yerine, belki bir "Başlat" butonu daha iyi olabilir. Şimdilik böyle kalsın.
+            // displayHighScores(); // startGame içinde çağrılıyor.
+        };
+    </script>
+</body>
+</html>
